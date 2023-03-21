@@ -17,12 +17,12 @@ using System.Windows.Shapes;
 namespace SearchAndSort.Views
 {
     /// <summary>
-    /// Interaction logic for NewState.xaml
+    /// Interaction logic for RandomStateWindow.xaml
     /// </summary>
-    public partial class NewStateWindow : Window, INotifyPropertyChanged
+    public partial class RandomStateWindow : Window, INotifyPropertyChanged
     {
         #region VARIABLES
-
+        
         private string message = "";
         public string Message
         {
@@ -34,40 +34,13 @@ namespace SearchAndSort.Views
             }
         }
 
-        private string stateString = "1, 2, 4, 5, 6, 7, 8";
-        public string StateString
-        {
-            get => stateString;
-            set
-            {
-                stateString = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StateString)));
-            }
-        }
-
-        private string resultStateString = "";
-        public string ResultStateString
-        {
-            get => resultStateString;
-            set
-            {
-                resultStateString = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ResultStateString)));
-            }
-        }
+        public int Length { get; set; } = 10;
+        
+        public int MinimumNumber { get; set; } = 0;
+        
+        public int MaximumNumber { get; set; } = 1000;
 
         public State StateCreated { get; set; }
-
-        #endregion
-
-
-        #region CONSTRUCTORS
-
-        public NewStateWindow()
-        {
-            InitializeComponent();
-            DataContext = this;
-        }
 
         #endregion
 
@@ -81,13 +54,8 @@ namespace SearchAndSort.Views
             Message = "";
             try
             {
-                if (!State.ValidateStateString(StateString))
-                    throw new Exception("the text contains duplicate values");
-                else
-                {
-                    StateCreated = new State(StateString);
-                    Close();
-                }
+                StateCreated = State.RandomState(Length, MinimumNumber, MaximumNumber);
+                Close();
             }
             catch (Exception ex)
             {
@@ -99,15 +67,20 @@ namespace SearchAndSort.Views
         private void Cancel(object sender, RoutedEventArgs e)
         {
             Message = "";
-            StateString = "";
             Close();
         }
-
-        
 
         #endregion
 
 
+        #region CONSTRUCTORS
 
+        public RandomStateWindow()
+        {
+            InitializeComponent();
+            DataContext = this;
+        }
+
+        #endregion
     }
 }

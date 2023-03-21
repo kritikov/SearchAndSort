@@ -1,11 +1,11 @@
-﻿<Window x:Class="SearchAndSort.Views.NewStateWindow"
+﻿<Window x:Class="SearchAndSort.Views.RandomStateWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SearchAndSort.Views"
         mc:Ignorable="d"
-        Title="Create a new initial state" Height="168" Width="804" WindowStartupLocation="CenterScreen">
+        Title="Create a random initial state" Height="221" Width="511" WindowStartupLocation="CenterScreen">
 
     <DockPanel>
         <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
@@ -18,13 +18,25 @@
         </WrapPanel>
 
         <Grid Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
             <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" TextWrapping="Wrap" Text="Give the numbers of the new state separated with commas:"/>
-            <TextBox Grid.Row="1" Text="{Binding StateString, Mode=TwoWay}" ScrollViewer.HorizontalScrollBarVisibility="Auto" HorizontalAlignment="Stretch"/>
+            <Label Grid.Row="0" Grid.Column="0" Content="length" HorizontalAlignment="Right"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Width="50" Text="{Binding Length}"/>
+
+            <Label Grid.Row="1" Grid.Column="0" Content="minimum number" HorizontalAlignment="Right"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Width="50" Text="{Binding MinimumNumber}"/>
+
+            <Label Grid.Row="2" Grid.Column="0" Content="maximum number" HorizontalAlignment="Right"/>
+            <TextBox Grid.Row="2" Grid.Column="1" Width="50" Text="{Binding MaximumNumber}"/>
 
         </Grid>
     </DockPanel>

@@ -14,6 +14,7 @@
 
         <WrapPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
             <Button Content="new state" Click="NewState"/>
+            <Button Content="random state" Click="RandomState"/>
             <Button Content="UCS"/>
             <Button Content="A*"/>
             <Button Content="exit" Click="ExitProgram"/>

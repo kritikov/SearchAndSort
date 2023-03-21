@@ -114,6 +114,19 @@ namespace SearchAndSort.Views
             }
         }
 
+        private void RandomState(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                RandomState();
+            }
+            catch (Exception ex)
+            {
+                Logs.Write(ex.Message);
+                Message = ex.Message;
+            }
+        }
+
         #endregion
 
         #region METHODS
@@ -145,7 +158,31 @@ namespace SearchAndSort.Views
                 throw ex;
             }
         }
+
+        /// <summary>
+        /// Display a window to create a new random state
+        /// </summary>
+        private void RandomState()
+        {
+            try
+            {
+                RandomStateWindow window = new RandomStateWindow();
+                window.ShowDialog();
+
+                if (window.StateCreated != null)
+                {
+                    InitialState = window.StateCreated;
+                    RefreshViews();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         #endregion
+
 
     }
 }

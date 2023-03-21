@@ -60,6 +60,67 @@ namespace SearchAndSort.Classes
             return result;
         }
 
+        /// <summary>
+        /// Check if a string if is valid to create a state
+        /// </summary>
+        /// <param name="stateString"></param>
+        /// <returns></returns>
+        public static bool ValidateStateString(string stateString)
+        {
+
+            // check for unique numbers
+            var numbers = new List<int>();
+            var numbersArray = stateString.Split(new string[] { "," }, StringSplitOptions.None);
+            foreach (var number in numbersArray)
+            {
+                var num = Convert.ToInt32(number.Trim());
+                if (numbers.Contains(num))
+                    return false;
+                else
+                    numbers.Add(num);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Create a state with random values
+        /// </summary>
+        /// <param name="numbersCount"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        public static State RandomState(int numbersCount, int min, int max)
+        {
+            State state = new State();
+            Random random = new Random();
+
+            int i = 1;
+            int invalidAttempts = 0;
+
+            while (i<= numbersCount)
+            {
+                int number = random.Next(min, max);
+
+                if (state.Numbers.Contains(number))
+                {
+                    invalidAttempts++;
+
+                    if (invalidAttempts == 100)
+                        throw new Exception("Unable to create a list with random numbers. Maybe you should give bigger internal for numbers and less length of the array");
+
+                    continue;
+                }
+                else
+                {
+                    state.Numbers.Add(number);
+                    i++;
+                }
+            }
+
+            return state;
+        }
+
         #endregion
     }
 }
