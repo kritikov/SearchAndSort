@@ -1,0 +1,57 @@
+﻿<Window x:Class="SearchAndSort.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SearchAndSort"
+        mc:Ignorable="d"
+        Title="Search and Sort" Height="509" Width="786" WindowStartupLocation="CenterScreen">
+
+    <DockPanel>
+        <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+            <TextBlock Text="{Binding Message}"/>
+        </StatusBar>
+
+        <WrapPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Content="new state" Click="NewState"/>
+            <Button Content="UCS"/>
+            <Button Content="A*"/>
+            <Button Content="exit" Click="ExitProgram"/>
+        </WrapPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Grid.Column="0" Header="Parameters" Margin="0">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Initial state"/>
+                    <TextBlock Text="{Binding InitialState.DisplayValue, Mode=OneWay}" HorizontalAlignment="Stretch" 
+                               TextWrapping="Wrap" MaxHeight="300" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    <TextBlock>
+                        <Run Text="N = "/>
+                        <Run Text="{Binding InitialState.N, Mode=OneWay}"/>
+                    </TextBlock>
+                    <CheckBox Margin="0, 10, 0, 0" Content="Update progress" FlowDirection="LeftToRight" ToolTip="Update the message area with the progress while searching for a solutions. Uncheck it for faster results."/>
+                </StackPanel>
+            </GroupBox>
+
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
+
+            <TabControl Grid.Column="2">
+                <TabItem Header="Results">
+                    <ListBox ItemsSource="{Binding ResultsView}"/>
+                </TabItem>
+                <TabItem Header="Logs">
+                    <ListBox ItemsSource="{Binding LogsView}"/>
+                </TabItem>
+            </TabControl>
+
+        </Grid>
+
+    </DockPanel>
+
+</Window>
