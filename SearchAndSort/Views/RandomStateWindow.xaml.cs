@@ -34,7 +34,7 @@ namespace SearchAndSort.Views
             }
         }
 
-        public int Length { get; set; } = 5; // from 8 and after is very slow
+        public int Length { get; set; } = 8; // from 8 and after is very slow
         
         public int MinimumNumber { get; set; } = 0;
         

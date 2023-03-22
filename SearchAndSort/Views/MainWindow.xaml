@@ -3,20 +3,45 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Commands="clr-namespace:SearchAndSort.Classes"
         xmlns:local="clr-namespace:SearchAndSort"
         mc:Ignorable="d"
         Title="Search and Sort" Height="509" Width="786" WindowStartupLocation="CenterScreen">
 
+    <Window.CommandBindings>
+        <CommandBinding
+            Command="Commands:Commands.NewState"
+            CanExecute="NewState_CanExecute"
+            Executed="NewState_Executed"/>
+        <CommandBinding
+            Command="Commands:Commands.RandomState"
+            CanExecute="RandomState_CanExecute"
+            Executed="RandomState_Executed" />
+        <CommandBinding
+            Command="Commands:Commands.UCSAnalysis"
+            CanExecute="UCSAnalysis_CanExecute"
+            Executed="UCSAnalysis_Executed"/>
+        <CommandBinding
+            Command="Commands:Commands.ASTARAnalysis"
+            CanExecute="ASTARAnalysis_CanExecute"
+            Executed="ASTARAnalysis_Executed"/>
+        <CommandBinding
+            Command="Commands:Commands.StopAnalysis"
+            CanExecute="StopAnalysis_CanExecute"
+            Executed="StopAnalysis_Executed"/>
+    </Window.CommandBindings>
+    
     <DockPanel>
         <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
             <TextBlock Text="{Binding Message}"/>
         </StatusBar>
 
         <WrapPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Content="new state" Click="NewState"/>
-            <Button Content="random state" Click="RandomState"/>
-            <Button Content="UCS" Click="UCSAnalysis"/>
-            <Button Content="A*"/>
+            <Button Content="new state" Command="Commands:Commands.NewState"/>
+            <Button Content="random state" Command="Commands:Commands.RandomState"/>
+            <Button Content="UCS" Command="Commands:Commands.UCSAnalysis"/>
+            <Button Content="A*" Command="Commands:Commands.ASTARAnalysis"/>
+            <Button Content="stop" Command="Commands:Commands.StopAnalysis"/>
             <Button Content="exit" Click="ExitProgram"/>
         </WrapPanel>
 

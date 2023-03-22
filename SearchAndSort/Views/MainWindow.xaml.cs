@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -47,6 +48,9 @@ namespace SearchAndSort.Views
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("InitialState"));
             }
         }
+
+        private bool SearchingValuationsRunning = false;
+        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
 
         #endregion
 
@@ -101,8 +105,20 @@ namespace SearchAndSort.Views
             System.Windows.Application.Current.Shutdown();
         }
 
-        private void NewState(object sender, RoutedEventArgs e)
+        #endregion
+
+
+        #region COMMANDS
+
+        private void NewState_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
+            e.CanExecute = (SearchingValuationsRunning == false) ? true : false;
+
+        }
+        private void NewState_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Message = "";
+
             try
             {
                 CreateNewState();
@@ -114,8 +130,15 @@ namespace SearchAndSort.Views
             }
         }
 
-        private void RandomState(object sender, RoutedEventArgs e)
+        private void RandomState_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
+            e.CanExecute = (SearchingValuationsRunning == false) ? true : false;
+
+        }
+        private void RandomState_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Message = "";
+
             try
             {
                 RandomState();
@@ -127,11 +150,60 @@ namespace SearchAndSort.Views
             }
         }
 
-        private void UCSAnalysis(object sender, RoutedEventArgs e)
+        private void UCSAnalysis_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
+            e.CanExecute = (InitialState != null && SearchingValuationsRunning == false) ? true : false;
+
+        }
+        private void UCSAnalysis_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Message = "";
+
             try
             {
-                State.UCSAnalysis(InitialState);
+                SearchingValuationsRunning = true;
+                UCSAnalysis();
+            }
+            catch (Exception ex)
+            {
+                Logs.Write(ex.Message);
+                Message = ex.Message;
+            }
+        }
+
+        private void ASTARAnalysis_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = (InitialState != null && SearchingValuationsRunning == false) ? true : false;
+
+        }
+        private void ASTARAnalysis_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Message = "";
+
+            try
+            {
+                //SearchingValuationsRunning = true;
+                //UCSAnalysis();
+            }
+            catch (Exception ex)
+            {
+                Logs.Write(ex.Message);
+                Message = ex.Message;
+            }
+        }
+
+        private void StopAnalysis_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = (SearchingValuationsRunning == true) ? true : false;
+
+        }
+        private void StopAnalysis_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Message = "";
+
+            try
+            {
+                cancellationToken.Cancel();
             }
             catch (Exception ex)
             {
@@ -195,9 +267,35 @@ namespace SearchAndSort.Views
             }
         }
 
+        private async Task UCSAnalysis()
+        {
+            try
+            {
+                //RefreshSolverViews();
+
+                cancellationToken = new CancellationTokenSource();
+
+                await Task.Run(() => {
+                    State.UCSAnalysis(InitialState, cancellationToken.Token, this);
+                });
+
+                SearchingValuationsRunning = false;
+                //RefreshSolverViews();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                SearchingValuationsRunning = false;
+            }
+        }
+
+
         #endregion
 
-
+        
     }
 }
 

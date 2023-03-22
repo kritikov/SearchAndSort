@@ -1,8 +1,11 @@
-﻿using System;
+﻿using SearchAndSort.Views;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace SearchAndSort.Classes
 {
@@ -168,7 +171,7 @@ namespace SearchAndSort.Classes
             }
             catch(Exception ex)
             {
-                throw ex;
+                throw;
             }
 
             return childState;
@@ -205,7 +208,7 @@ namespace SearchAndSort.Classes
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -262,51 +265,81 @@ namespace SearchAndSort.Classes
         /// <summary>
         /// Analyze a state using the UCS algorithm
         /// </summary>
-        public static void UCSAnalysis(State initialState)
+        public static void UCSAnalysis(State initialState, CancellationToken cancellationToken, MainWindow window)
         {
-            List<State> openStates = new List<State>();
-            State finalState = null;
-
-            openStates.Add(initialState);
-            State selectedState = initialState;
-
-            // if the initial state is sorted then is the state we search
-            Logs.Write($"Initial state {initialState.DisplayValue}, g={initialState.g}, h={initialState.h}, f={initialState.f}");
-            if (initialState.IsSorted())
+            try
             {
-                finalState = initialState;
-            }
+                List<State> openStates = new List<State>();
+                State finalState = null;
 
-            while (finalState == null && openStates.Count != 0)
-            {
-                // open the childs of the selected state
-                for (int i = 1; i < selectedState.N; i++)
+                openStates.Add(initialState);
+                State selectedState = initialState;
+
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    State childState = selectedState.GetChild(i);
+                    Logs.Write("");
+                    Logs.Write($"******************************************");
+                    Logs.Write($"Start analyzing initial state {initialState.DisplayValue} with UCS algorithm");
+                    Logs.Write($"Initial state {initialState.DisplayValue}, g={initialState.g}, h={initialState.h}, f={initialState.f}");
+                });
 
-                    if (childState.IsUniqueDescendant())
+                // if the initial state is sorted then is the state we search
+                if (initialState.IsSorted())
+                    finalState = initialState;
+
+                while (finalState == null && openStates.Count != 0)
+                {
+                    // stop the process if the user has cancel it
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    // open the childs of the selected state
+                    for (int i = 1; i < selectedState.N; i++)
                     {
-                        openStates.Add(childState);
-                        Logs.Write($"open child {childState.DisplayValue}, g={childState.g}, h={childState.h}, f={childState.f}");
+                        State childState = selectedState.GetChild(i);
+
+                        if (childState.IsUniqueDescendant())
+                        {
+                            openStates.Add(childState);
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                Logs.Write($"open child {childState.DisplayValue}, g={childState.g}, h={childState.h}, f={childState.f}");
+                            });
+                        }
                     }
+
+                    // remove the selected state from the open states
+                    openStates.Remove(selectedState);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        Logs.Write($"closed state {selectedState?.DisplayValue}");
+                    });
+
+                    // keep the unique open states with the best f
+                    openStates = openStates.GroupBy(state => state.DisplayValue)
+                        .Select(state => state.OrderBy(state => state.f)
+                        .First())
+                        .ToList();
+
+                    // find the open state with the best f
+                    selectedState = GetBestState(openStates);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        Logs.Write($"new selected state {selectedState?.DisplayValue}, g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
+                    });
+
+                    if (selectedState.IsSorted())
+                        finalState = selectedState;
                 }
 
-                // remove the selected state from the open states
-                openStates.Remove(selectedState);
-                Logs.Write($"closed state {selectedState.DisplayValue}");
-
-                // keep the unique open states with the best f
-                openStates = openStates.GroupBy(state => state.DisplayValue)
-                    .Select(state => state.OrderBy(state => state.f)
-                    .First())
-                    .ToList();
-
-                // find the open state with the best f
-                selectedState = State.GetBestState(openStates);
-                Logs.Write($"new selected state {selectedState?.DisplayValue}, g={selectedState.g}, h={selectedState.h}, f={selectedState.f}");
-
-                if (selectedState.IsSorted())
-                    finalState = selectedState;
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Logs.Write($"Analyzing initial state {initialState.DisplayValue} with UCS algorithm ended");
+                    Logs.Write("");
+                });
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
 
         }
