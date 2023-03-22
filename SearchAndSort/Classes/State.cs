@@ -10,11 +10,21 @@ namespace SearchAndSort.Classes
     {
         #region VARIABLES
 
-        public List<int> Numbers { get; set; }
-
-        public string DisplayValue => this.ToString();
-
-        public int N => Numbers.Count;
+        public List<int> Numbers { get; set; } = new List<int>();
+        public string DisplayValue
+        {
+            get { return this.ToString(); }
+        }
+        public int N
+        {
+            get { return Numbers.Count; }
+        }
+        public int SplitIndex = 0;
+        public State? Parent = null;
+        public int f = 0;
+        public int g = 0;
+        public int h = 0;
+        public int Weight = 0;
 
         #endregion
 
@@ -23,13 +33,10 @@ namespace SearchAndSort.Classes
 
         public State()
         {
-            Numbers = new List<int>();
         }
 
         public State(string numbersString)
         {
-            Numbers = new List<int>();
-
             var numbers = numbersString.Split(new string[] { "," }, StringSplitOptions.None);
 
             foreach (var number in numbers)
@@ -121,6 +128,188 @@ namespace SearchAndSort.Classes
             return state;
         }
 
+        /// <summary>
+        /// Create a new state that is child of this state. The child has an index that splits its list of numbers at two parts.
+        /// </summary>
+        /// <param name="splitIndex"></param>
+        /// <returns></returns>
+        public State GetChild(int splitIndex)
+        {
+            State childState = new State();
+            childState.Parent = this;
+            childState.SplitIndex = splitIndex;
+            childState.Weight = 1;
+
+            // calculate costs
+            childState.g = childState.Parent.g + childState.Weight;
+            childState.f = childState.g + childState.h;
+
+            try
+            {
+                // split the list of numbers in two parts
+                List<int> listLeft = new List<int>();
+                List<int> listRight = new List<int>();
+                for (int i = 0; i < this.Numbers.Count; i++)
+                {
+                    if (i <= splitIndex)
+                        listLeft.Add(this.Numbers[i]);
+                    else
+                        listRight.Add(this.Numbers[i]);
+                }
+
+                // reverse the numbers in the left list
+                listLeft.Reverse();
+
+                // join the left list with the right list
+                listLeft.AddRange(listRight);
+
+                // set the numbers of the child as the result
+                childState.Numbers = listLeft;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+
+            return childState;
+        }
+
+        /// <summary>
+        /// Check if the numbers in the list are sorted ascending.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsSorted()
+        {
+            try
+            {
+                int? previousNumber = null;
+
+                // if any number is less than the previious number then the list is not sorted
+                foreach (var number in Numbers)
+                {
+                    if (previousNumber == null)
+                    {
+                        previousNumber = number;
+                        continue;
+                    }
+                    else
+                    {
+                        if (previousNumber > number)
+                            return false;
+
+                        previousNumber = number;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Check if a state has not an equal anchestor and is unique
+        /// </summary>
+        /// <returns></returns>
+        public bool IsUniqueDescendant()
+        {
+            State? parent = this.Parent;
+
+            while (parent != null)
+            {
+                if (parent.DisplayValue == this.DisplayValue)
+                    return false;
+
+                parent = parent.Parent;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Return the best state from a list of states
+        /// </summary>
+        /// <param name="states"></param>
+        /// <returns></returns>
+        public static State? GetBestState(List<State> states)
+        {
+            State? bestState;
+
+            try
+            {
+                if (states.Count == 0)
+                    return null;
+                else
+                {
+                    bestState = states[0];
+                    foreach(var state in states)
+                    {
+                        if (state.f < bestState.f)
+                            bestState = state;
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+
+            return bestState;
+        }
+
+        /// <summary>
+        /// Analyze a state using the UCS algorithm
+        /// </summary>
+        public static void UCSAnalysis(State initialState)
+        {
+            List<State> openStates = new List<State>();
+            State finalState = null;
+
+            openStates.Add(initialState);
+            State selectedState = initialState;
+
+            // if the initial state is sorted then is the state we search
+            Logs.Write($"Initial state {initialState.DisplayValue}, g={initialState.g}, h={initialState.h}, f={initialState.f}");
+            if (initialState.IsSorted())
+            {
+                finalState = initialState;
+            }
+
+            while (finalState == null && openStates.Count != 0)
+            {
+                // open the childs of the selected state
+                for (int i = 1; i < selectedState.N; i++)
+                {
+                    State childState = selectedState.GetChild(i);
+
+                    if (childState.IsUniqueDescendant())
+                    {
+                        openStates.Add(childState);
+                        Logs.Write($"open child {childState.DisplayValue}, g={childState.g}, h={childState.h}, f={childState.f}");
+                    }
+                }
+
+                // remove the selected state from the open states
+                openStates.Remove(selectedState);
+                Logs.Write($"closed state {selectedState.DisplayValue}");
+
+                // keep the unique open states with the best f
+                openStates = openStates.GroupBy(state => state.DisplayValue)
+                    .Select(state => state.OrderBy(state => state.f)
+                    .First())
+                    .ToList();
+
+                // find the open state with the best f
+                selectedState = State.GetBestState(openStates);
+                Logs.Write($"new selected state {selectedState?.DisplayValue}, g={selectedState.g}, h={selectedState.h}, f={selectedState.f}");
+
+                if (selectedState.IsSorted())
+                    finalState = selectedState;
+            }
+
+        }
         #endregion
     }
 }

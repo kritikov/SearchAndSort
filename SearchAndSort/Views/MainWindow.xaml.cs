@@ -127,7 +127,21 @@ namespace SearchAndSort.Views
             }
         }
 
+        private void UCSAnalysis(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                State.UCSAnalysis(InitialState);
+            }
+            catch (Exception ex)
+            {
+                Logs.Write(ex.Message);
+                Message = ex.Message;
+            }
+        }
+
         #endregion
+
 
         #region METHODS
 
