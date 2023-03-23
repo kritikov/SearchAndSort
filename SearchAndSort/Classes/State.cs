@@ -275,13 +275,12 @@ namespace SearchAndSort.Classes
                 openStates.Add(initialState);
                 State selectedState = initialState;
 
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    Logs.Write("");
-                    Logs.Write($"******************************************");
-                    Logs.Write($"Start analyzing initial state {initialState.DisplayValue} with UCS algorithm");
-                    Logs.Write($"Initial state {initialState.DisplayValue}, g={initialState.g}, h={initialState.h}, f={initialState.f}");
-                });
+                //Logs.Write("");
+                //Logs.Write($"**** Analyzing initial state {initialState.DisplayValue} with UCS algorithm ****");
+                //Logs.Write($"Initial state {initialState.DisplayValue}, g={initialState.g}, h={initialState.h}, f={initialState.f}");
+                //Application.Current.Dispatcher.Invoke(() =>
+                //{
+                //});
 
                 // if the initial state is sorted then is the state we search
                 if (initialState.IsSorted())
@@ -300,19 +299,16 @@ namespace SearchAndSort.Classes
                         if (childState.IsUniqueDescendant())
                         {
                             openStates.Add(childState);
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                Logs.Write($"open child {childState.DisplayValue}, g={childState.g}, h={childState.h}, f={childState.f}");
-                            });
+                            //Logs.Write($"open child {childState.DisplayValue}, g={childState.g}, h={childState.h}, f={childState.f}");
                         }
                     }
 
                     // remove the selected state from the open states
                     openStates.Remove(selectedState);
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        Logs.Write($"closed state {selectedState?.DisplayValue}");
-                    });
+                    //Application.Current.Dispatcher.Invoke(() =>
+                    //{
+                    //    Logs.Write($"closed state {selectedState?.DisplayValue}");
+                    //});
 
                     // keep the unique open states with the best f
                     openStates = openStates.GroupBy(state => state.DisplayValue)
@@ -322,20 +318,14 @@ namespace SearchAndSort.Classes
 
                     // find the open state with the best f
                     selectedState = GetBestState(openStates);
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        Logs.Write($"new selected state {selectedState?.DisplayValue}, g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
-                    });
+                    //Logs.Write($"new selected state {selectedState?.DisplayValue}, g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
 
                     if (selectedState.IsSorted())
                         finalState = selectedState;
                 }
 
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    Logs.Write($"Analyzing initial state {initialState.DisplayValue} with UCS algorithm ended");
-                    Logs.Write("");
-                });
+                //Logs.Write($"Analyzing initial state {initialState.DisplayValue} with UCS algorithm ended");
+                //Logs.Write("");
             }
             catch (Exception ex)
             {
@@ -343,6 +333,7 @@ namespace SearchAndSort.Classes
             }
 
         }
+        
         #endregion
     }
 }

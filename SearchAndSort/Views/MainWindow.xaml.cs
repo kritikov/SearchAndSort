@@ -113,7 +113,6 @@ namespace SearchAndSort.Views
         private void NewState_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = (SearchingValuationsRunning == false) ? true : false;
-
         }
         private void NewState_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -153,7 +152,6 @@ namespace SearchAndSort.Views
         private void UCSAnalysis_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = (InitialState != null && SearchingValuationsRunning == false) ? true : false;
-
         }
         private void UCSAnalysis_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -204,6 +202,7 @@ namespace SearchAndSort.Views
             try
             {
                 cancellationToken.Cancel();
+                SearchingValuationsRunning = false;
             }
             catch (Exception ex)
             {
