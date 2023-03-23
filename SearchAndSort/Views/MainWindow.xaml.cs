@@ -52,6 +52,8 @@ namespace SearchAndSort.Views
         private bool SearchingValuationsRunning = false;
         private CancellationTokenSource cancellationToken = new CancellationTokenSource();
 
+        public ObservableCollection<string> Results { get; set; } = new ObservableCollection<string>();
+
         #endregion
 
 
@@ -218,8 +220,8 @@ namespace SearchAndSort.Views
 
         public void RefreshViews()
         {
-            //resultsSource.Source = AK.Clauses;
-            //PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ResultsView"));
+            resultsSource.Source = Results;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ResultsView"));
         }
 
         /// <summary>
@@ -270,7 +272,8 @@ namespace SearchAndSort.Views
         {
             try
             {
-                //RefreshSolverViews();
+                Results.Clear();
+                RefreshViews();
 
                 cancellationToken = new CancellationTokenSource();
 
@@ -279,7 +282,7 @@ namespace SearchAndSort.Views
                 });
 
                 SearchingValuationsRunning = false;
-                //RefreshSolverViews();
+                RefreshViews();
             }
             catch (Exception ex)
             {
@@ -288,13 +291,11 @@ namespace SearchAndSort.Views
             finally
             {
                 SearchingValuationsRunning = false;
+                RefreshViews();
             }
         }
 
-
         #endregion
-
-        
     }
 }
 

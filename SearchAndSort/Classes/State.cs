@@ -270,18 +270,20 @@ namespace SearchAndSort.Classes
             try
             {
                 List<State> openStates = new List<State>();
-                State finalState = null;
+                State? finalState = null;
+                ulong statesOpened = 0;
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    window.Results.Clear();
+                });
 
                 openStates.Add(initialState);
                 State selectedState = initialState;
 
-                //Logs.Write("");
-                //Logs.Write($"**** Analyzing initial state {initialState.DisplayValue} with UCS algorithm ****");
-                //Logs.Write($"Initial state {initialState.DisplayValue}, g={initialState.g}, h={initialState.h}, f={initialState.f}");
-                //Application.Current.Dispatcher.Invoke(() =>
-                //{
-                //});
-
+                Logs.Write($"**** Analyzing initial state {initialState.DisplayValue} with UCS algorithm ****");
+                Logs.Write($"Initial state {initialState.DisplayValue}, g={initialState.g}, h={initialState.h}, f={initialState.f}");
+                
                 // if the initial state is sorted then is the state we search
                 if (initialState.IsSorted())
                     finalState = initialState;
@@ -299,16 +301,14 @@ namespace SearchAndSort.Classes
                         if (childState.IsUniqueDescendant())
                         {
                             openStates.Add(childState);
-                            //Logs.Write($"open child {childState.DisplayValue}, g={childState.g}, h={childState.h}, f={childState.f}");
+                            statesOpened++;
+                            Logs.Write($"open child {childState.DisplayValue}, g={childState.g}, h={childState.h}, f={childState.f}");
                         }
                     }
 
                     // remove the selected state from the open states
                     openStates.Remove(selectedState);
-                    //Application.Current.Dispatcher.Invoke(() =>
-                    //{
-                    //    Logs.Write($"closed state {selectedState?.DisplayValue}");
-                    //});
+                    Logs.Write($"closed state {selectedState?.DisplayValue}");
 
                     // keep the unique open states with the best f
                     openStates = openStates.GroupBy(state => state.DisplayValue)
@@ -318,14 +318,54 @@ namespace SearchAndSort.Classes
 
                     // find the open state with the best f
                     selectedState = GetBestState(openStates);
-                    //Logs.Write($"new selected state {selectedState?.DisplayValue}, g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
+                    Logs.Write($"new selected state {selectedState?.DisplayValue}, g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
 
+                    // check if the selected state is what we are searching for
                     if (selectedState.IsSorted())
                         finalState = selectedState;
                 }
 
-                //Logs.Write($"Analyzing initial state {initialState.DisplayValue} with UCS algorithm ended");
-                //Logs.Write("");
+                Logs.Write($"Analyzing initial state {initialState.DisplayValue} with UCS algorithm ended");
+
+                if (finalState != null)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        window.Results.Add($"Final state found: {finalState.DisplayValue}");
+                        window.Results.Add($"Final state stats: g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
+                        window.Results.Add($"States opened: {statesOpened}");
+
+                        List<State> states = new List<State>
+                        {
+                            finalState
+                        };
+
+                        State? parent = finalState.Parent;
+                        while (parent != null)
+                        {
+                            states.Add(parent);
+                            parent = parent.Parent;
+                        }
+
+                        states.Reverse();
+
+                        window.Results.Add($"Path until final state found: ");
+                        foreach (var state in states)
+                        {
+                            if (state.Parent == null)
+                                window.Results.Add($"initial state {state?.DisplayValue}, g={state?.g}, h={state?.h}, f={state?.f}");
+                            else
+                                window.Results.Add($"split at index {state?.SplitIndex+1}: state {state?.DisplayValue}, g={state?.g}, h={state?.h}, f={state?.f}");
+                        }
+                    });
+                }
+                else
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        window.Results.Add($"No final state found with the UCS algorithm");
+                    });
+                }
             }
             catch (Exception ex)
             {
