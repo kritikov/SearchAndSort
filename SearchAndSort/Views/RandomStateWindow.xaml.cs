@@ -34,11 +34,7 @@ namespace SearchAndSort.Views
             }
         }
 
-        public int Length { get; set; } = 8; // from 8 and after is very slow
-        
-        public int MinimumNumber { get; set; } = 0;
-        
-        public int MaximumNumber { get; set; } = 1000;
+        public int Ν { get; set; } = 5; // from 8 and after is very slow
 
         public State StateCreated { get; set; }
 
@@ -54,7 +50,7 @@ namespace SearchAndSort.Views
             Message = "";
             try
             {
-                StateCreated = State.RandomState(Length, MinimumNumber, MaximumNumber);
+                StateCreated = State.RandomState(Ν);
                 Close();
             }
             catch (Exception ex)

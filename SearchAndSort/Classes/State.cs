@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
 
 namespace SearchAndSort.Classes
 {
@@ -71,64 +72,21 @@ namespace SearchAndSort.Classes
         }
 
         /// <summary>
-        /// Check if a string if is valid to create a state
+        /// Shuffle the numbers of the list
         /// </summary>
-        /// <param name="stateString"></param>
-        /// <returns></returns>
-        public static bool ValidateStateString(string stateString)
+        public void ShuffleNumbers()
         {
+            Random rng = new Random();
 
-            // check for unique numbers
-            var numbers = new List<int>();
-            var numbersArray = stateString.Split(new string[] { "," }, StringSplitOptions.None);
-            foreach (var number in numbersArray)
+            int n = this.Numbers.Count;
+            while (n > 1)
             {
-                var num = Convert.ToInt32(number.Trim());
-                if (numbers.Contains(num))
-                    return false;
-                else
-                    numbers.Add(num);
+                n--;
+                int k = rng.Next(n + 1);
+                var value = Numbers[k];
+                Numbers[k] = Numbers[n];
+                Numbers[n] = value;
             }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Create a state with random values
-        /// </summary>
-        /// <param name="numbersCount"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
-        public static State RandomState(int numbersCount, int min, int max)
-        {
-            State state = new State();
-            Random random = new Random();
-
-            int i = 1;
-            int invalidAttempts = 0;
-
-            while (i<= numbersCount)
-            {
-                int number = random.Next(min, max);
-
-                if (state.Numbers.Contains(number))
-                {
-                    invalidAttempts++;
-
-                    if (invalidAttempts == 100)
-                        throw new Exception("Unable to create a list with random numbers. Maybe you should give bigger internal for numbers and less length of the array");
-
-                    continue;
-                }
-                else
-                {
-                    state.Numbers.Add(number);
-                    i++;
-                }
-            }
-
-            return state;
         }
 
         /// <summary>
@@ -145,7 +103,6 @@ namespace SearchAndSort.Classes
 
             // calculate costs
             childState.g = childState.Parent.g + childState.Weight;
-            childState.f = childState.g + childState.h;
 
             try
             {
@@ -168,10 +125,13 @@ namespace SearchAndSort.Classes
 
                 // set the numbers of the child as the result
                 childState.Numbers = listLeft;
+
+                // count the gaps
+                childState.h = childState.CountGaps();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
 
             return childState;
@@ -187,7 +147,7 @@ namespace SearchAndSort.Classes
             {
                 int? previousNumber = null;
 
-                // if any number is less than the previious number then the list is not sorted
+                // if any number is less than the previous number then the list is not sorted
                 foreach (var number in Numbers)
                 {
                     if (previousNumber == null)
@@ -232,6 +192,84 @@ namespace SearchAndSort.Classes
         }
 
         /// <summary>
+        /// Count the gaps in the sequence of the numbers
+        /// </summary>
+        /// <returns></returns>
+        public int CountGaps()
+        {
+            int gaps = 0;
+
+            try
+            {
+                int? previousNumber = null;
+
+                foreach (var number in Numbers)
+                {
+                    if (previousNumber == null)
+                    {
+                        previousNumber = number;
+                        continue;
+                    }
+                    else
+                    {
+                        if (Math.Abs(previousNumber.GetValueOrDefault() - number) > 1)
+                            gaps++;
+
+                        previousNumber = number;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return gaps;
+        }
+
+        /// <summary>
+        /// Check if a string if is valid to create a state
+        /// </summary>
+        /// <param name="stateString"></param>
+        /// <returns></returns>
+        public static bool ValidateStateString(string stateString)
+        {
+
+            // check for unique numbers
+            var numbers = new List<int>();
+            var numbersArray = stateString.Split(new string[] { "," }, StringSplitOptions.None);
+            foreach (var number in numbersArray)
+            {
+                var num = Convert.ToInt32(number.Trim());
+                if (numbers.Contains(num))
+                    return false;
+                else
+                    numbers.Add(num);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Create a state with a specific amount of numbers in random sequence
+        /// </summary>
+        /// <param name="numbersCount"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        public static State RandomState(int numbersCount)
+        {
+            State state = new State();
+
+            for (int i = 1; i <= numbersCount; i++)
+                state.Numbers.Add(i);
+
+            state.ShuffleNumbers();
+
+            return state;
+        }
+
+        /// <summary>
         /// Return the best state from a list of states
         /// </summary>
         /// <param name="states"></param>
@@ -267,22 +305,19 @@ namespace SearchAndSort.Classes
         /// </summary>
         public static void UCSAnalysis(State initialState, CancellationToken cancellationToken, MainWindow window)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
             try
             {
                 List<State> openStates = new List<State>();
                 State? finalState = null;
-                ulong statesOpened = 0;
-
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    window.Results.Clear();
-                });
+                ulong statesOpened = 1;
 
                 openStates.Add(initialState);
                 State selectedState = initialState;
 
                 Logs.Write($"**** Analyzing initial state {initialState.DisplayValue} with UCS algorithm ****");
-                Logs.Write($"Initial state {initialState.DisplayValue}, g={initialState.g}, h={initialState.h}, f={initialState.f}");
+                Logs.Write($"Initial state: {initialState.DisplayValue} with g={initialState.g}, f={initialState.f}");
                 
                 // if the initial state is sorted then is the state we search
                 if (initialState.IsSorted())
@@ -300,15 +335,18 @@ namespace SearchAndSort.Classes
 
                         if (childState.IsUniqueDescendant())
                         {
+                            // evaluate state
+                            childState.f = childState.g;
+
                             openStates.Add(childState);
                             statesOpened++;
-                            Logs.Write($"open child {childState.DisplayValue}, g={childState.g}, h={childState.h}, f={childState.f}");
+                            Logs.Write($"opening child {childState.DisplayValue} with g={childState.g}, f={childState.f}");
                         }
                     }
 
                     // remove the selected state from the open states
                     openStates.Remove(selectedState);
-                    Logs.Write($"closed state {selectedState?.DisplayValue}");
+                    Logs.Write($"closing state {selectedState?.DisplayValue}");
 
                     // keep the unique open states with the best f
                     openStates = openStates.GroupBy(state => state.DisplayValue)
@@ -318,11 +356,14 @@ namespace SearchAndSort.Classes
 
                     // find the open state with the best f
                     selectedState = GetBestState(openStates);
-                    Logs.Write($"new selected state {selectedState?.DisplayValue}, g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
+                    Logs.Write($"new selected state {selectedState?.DisplayValue} with g={selectedState?.g}, f={selectedState?.f}");
 
                     // check if the selected state is what we are searching for
                     if (selectedState.IsSorted())
+                    {
                         finalState = selectedState;
+                        Logs.Write($"found final state {finalState?.DisplayValue} with g={finalState?.g}, f={finalState?.f}");
+                    }
                 }
 
                 Logs.Write($"Analyzing initial state {initialState.DisplayValue} with UCS algorithm ended");
@@ -331,9 +372,10 @@ namespace SearchAndSort.Classes
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        window.Results.Add($"Final state found: {finalState.DisplayValue}");
-                        window.Results.Add($"Final state stats: g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
+                        window.Results.Add($"Final state found: {finalState.DisplayValue} with g={selectedState?.g}, f={selectedState?.f}");
+                        window.Results.Add($"Final cost = {selectedState?.g}");
                         window.Results.Add($"States opened: {statesOpened}");
+                        window.Results.Add($"Total time: {watch.ElapsedMilliseconds} ms");
 
                         List<State> states = new List<State>
                         {
@@ -353,9 +395,9 @@ namespace SearchAndSort.Classes
                         foreach (var state in states)
                         {
                             if (state.Parent == null)
-                                window.Results.Add($"initial state {state?.DisplayValue}, g={state?.g}, h={state?.h}, f={state?.f}");
+                                window.Results.Add($"initial state {state?.DisplayValue} with g={state?.g}, f={state?.f}");
                             else
-                                window.Results.Add($"split at index {state?.SplitIndex+1}: state {state?.DisplayValue}, g={state?.g}, h={state?.h}, f={state?.f}");
+                                window.Results.Add($"split at position {state?.SplitIndex+1} => state {state?.DisplayValue} with g={state?.g}, f={state?.f}");
                         }
                     });
                 }
@@ -363,7 +405,7 @@ namespace SearchAndSort.Classes
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        window.Results.Add($"No final state found with the UCS algorithm");
+                        window.Results.Add($"No final state found");
                     });
                 }
             }
@@ -371,7 +413,130 @@ namespace SearchAndSort.Classes
             {
                 throw ex;
             }
+            finally
+            {
+                watch.Stop();
+            }
+        }
+        
+        /// <summary>
+        /// Analyze a state using the A* algorithm
+        /// </summary>
+        public static void ASTARAnalysis(State initialState, CancellationToken cancellationToken, MainWindow window)
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
 
+            try
+            {
+                List<State> openStates = new List<State>();
+                State? finalState = null;
+                ulong statesOpened = 1;
+
+                openStates.Add(initialState);
+                State selectedState = initialState;
+
+                Logs.Write($"**** Analyzing initial state {initialState.DisplayValue} with A* algorithm ****");
+                Logs.Write($"Initial state: {initialState.DisplayValue} with g={initialState.g}, h={initialState.h}, f={initialState.f}");
+                
+                // if the initial state is sorted then is the state we search
+                if (initialState.IsSorted())
+                    finalState = initialState;
+
+                while (finalState == null && openStates.Count != 0)
+                {
+                    // stop the process if the user has cancel it
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    // open the childs of the selected state
+                    for (int i = 1; i < selectedState.N; i++)
+                    {
+                        State childState = selectedState.GetChild(i);
+
+                        if (childState.IsUniqueDescendant())
+                        {
+                            // evaluate child
+                            childState.f = childState.g + childState.h;
+
+                            // open child
+                            openStates.Add(childState);
+                            statesOpened++;
+                            Logs.Write($"opening child {childState.DisplayValue} with g={childState.g}, h={childState.h}, f={childState.f}");
+                        }
+                    }
+
+                    // remove the selected state from the open states
+                    openStates.Remove(selectedState);
+                    Logs.Write($"closing state {selectedState?.DisplayValue}");
+
+                    // keep the unique open states with the best f
+                    openStates = openStates.GroupBy(state => state.DisplayValue)
+                        .Select(state => state.OrderBy(state => state.f)
+                        .First())
+                        .ToList();
+
+                    // find the open state with the best f
+                    selectedState = GetBestState(openStates);
+                    Logs.Write($"new selected state {selectedState?.DisplayValue} with g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
+
+                    // check if the selected state is what we are searching for
+                    if (selectedState.IsSorted())
+                    {
+                        finalState = selectedState;
+                        Logs.Write($"found final state {finalState?.DisplayValue} with g={finalState?.g}, h={finalState?.h}, f={finalState?.f}");
+                    }
+                }
+
+                Logs.Write($"Analyzing initial state {initialState.DisplayValue} with UCS algorithm ended");
+
+                if (finalState != null)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        window.Results.Add($"Final state found: {finalState.DisplayValue} with g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
+                        window.Results.Add($"Final cost = {selectedState?.g}");
+                        window.Results.Add($"States opened: {statesOpened}");
+                        window.Results.Add($"Total time: {watch.ElapsedMilliseconds } ms");
+
+                        List<State> states = new List<State>
+                        {
+                            finalState
+                        };
+
+                        State? parent = finalState.Parent;
+                        while (parent != null)
+                        {
+                            states.Add(parent);
+                            parent = parent.Parent;
+                        }
+
+                        states.Reverse();
+
+                        window.Results.Add($"Path until final state found: ");
+                        foreach (var state in states)
+                        {
+                            if (state.Parent == null)
+                                window.Results.Add($"initial state {state?.DisplayValue} with g={state?.g}, h={state?.CountGaps()}, f={state?.f}");
+                            else
+                                window.Results.Add($"split at position {state?.SplitIndex+1} => state {state?.DisplayValue} with g={state?.g}, h={state?.h}, f={state?.f}");
+                        }
+                    });
+                }
+                else
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        window.Results.Add($"No final state found");
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                watch.Stop();
+            }
         }
         
         #endregion

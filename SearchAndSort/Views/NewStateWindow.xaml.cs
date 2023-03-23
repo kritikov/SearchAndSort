@@ -34,7 +34,7 @@ namespace SearchAndSort.Views
             }
         }
 
-        private string stateString = "1, 2, 4, 5, 6, 7, 8";
+        private string stateString = "1, 2, 3, 4, 5";
         public string StateString
         {
             get => stateString;

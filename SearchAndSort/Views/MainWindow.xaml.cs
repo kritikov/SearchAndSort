@@ -49,7 +49,8 @@ namespace SearchAndSort.Views
             }
         }
 
-        private bool SearchingValuationsRunning = false;
+        public bool SearchingValuationsRunning = false;
+
         private CancellationTokenSource cancellationToken = new CancellationTokenSource();
 
         public ObservableCollection<string> Results { get; set; } = new ObservableCollection<string>();
@@ -182,8 +183,7 @@ namespace SearchAndSort.Views
 
             try
             {
-                //SearchingValuationsRunning = true;
-                //UCSAnalysis();
+                ASTARAnalysis();
             }
             catch (Exception ex)
             {
@@ -204,7 +204,6 @@ namespace SearchAndSort.Views
             try
             {
                 cancellationToken.Cancel();
-                SearchingValuationsRunning = false;
             }
             catch (Exception ex)
             {
@@ -221,7 +220,7 @@ namespace SearchAndSort.Views
         public void RefreshViews()
         {
             resultsSource.Source = Results;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ResultsView"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ResultsView)));
         }
 
         /// <summary>
@@ -276,17 +275,46 @@ namespace SearchAndSort.Views
                 RefreshViews();
 
                 cancellationToken = new CancellationTokenSource();
+                SearchingValuationsRunning = true;
 
-                await Task.Run(() => {
+                //await Task.Delay(1000);
+
+                await Task.Run(() =>
+                {
                     State.UCSAnalysis(InitialState, cancellationToken.Token, this);
                 });
-
-                SearchingValuationsRunning = false;
-                RefreshViews();
             }
             catch (Exception ex)
             {
-                throw ex;
+                Logs.Write(ex.Message);
+                Message = ex.Message;
+            }
+            finally
+            {
+                SearchingValuationsRunning = false;
+                RefreshViews();
+            }
+        }
+
+        private async Task ASTARAnalysis()
+        {
+            try
+            {
+                Results.Clear();
+                RefreshViews();
+
+                cancellationToken = new CancellationTokenSource();
+                SearchingValuationsRunning = true;
+
+                await Task.Run(() =>
+                {
+                    State.ASTARAnalysis(InitialState, cancellationToken.Token, this);
+                });
+            }
+            catch (Exception ex)
+            {
+                Logs.Write(ex.Message);
+                Message = ex.Message;
             }
             finally
             {

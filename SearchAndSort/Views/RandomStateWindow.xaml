@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SearchAndSort.Views"
         mc:Ignorable="d"
-        Title="Create a random initial state" Height="221" Width="511" WindowStartupLocation="CenterScreen">
+        Title="Create a random initial state" Height="151" Width="501" WindowStartupLocation="CenterScreen">
 
     <DockPanel>
         <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
@@ -29,14 +29,8 @@
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
-            <Label Grid.Row="0" Grid.Column="0" Content="length" HorizontalAlignment="Right"/>
-            <TextBox Grid.Row="0" Grid.Column="1" Width="50" Text="{Binding Length}"/>
-
-            <Label Grid.Row="1" Grid.Column="0" Content="minimum number" HorizontalAlignment="Right"/>
-            <TextBox Grid.Row="1" Grid.Column="1" Width="50" Text="{Binding MinimumNumber}"/>
-
-            <Label Grid.Row="2" Grid.Column="0" Content="maximum number" HorizontalAlignment="Right"/>
-            <TextBox Grid.Row="2" Grid.Column="1" Width="50" Text="{Binding MaximumNumber}"/>
+            <Label Grid.Row="0" Grid.Column="0" Content="Ν" HorizontalAlignment="Right"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Width="50" Text="{Binding Ν}"/>
 
         </Grid>
     </DockPanel>

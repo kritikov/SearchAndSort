@@ -12,7 +12,7 @@ namespace SearchAndSort.Classes
     {
 
         private static ObservableCollection<string> list = new ObservableCollection<string>();
-        private static int MaxLenth = 5000;
+        private static int MaxLenth = 10000;
 
         public static ObservableCollection<string> List
         {
@@ -29,7 +29,7 @@ namespace SearchAndSort.Classes
         private static void Add(string message)
         {
 
-            if (list.Count() == MaxLenth)
+            if (list.Count == MaxLenth)
             {
                 list.RemoveAt(0);
             }
