@@ -196,6 +196,8 @@ namespace SearchAndSort.Classes
 
         /// <summary>
         /// Count the gaps in the sequence of the numbers
+        /// https://en.wikipedia.org/wiki/Pancake_sorting
+        /// http://rucs.ca/artificial-intelligence/heuristics-for-solving-the-pancake-problem#:~:text=In%20the%20pancake%20puzzle%2C%20this,are%20said%20to%20be%20admissible.
         /// </summary>
         /// <returns></returns>
         public int CountGaps()
