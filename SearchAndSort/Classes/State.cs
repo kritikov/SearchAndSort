@@ -1,12 +1,15 @@
 ﻿using SearchAndSort.Views;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Input;
 
 namespace SearchAndSort.Classes
 {
@@ -127,7 +130,7 @@ namespace SearchAndSort.Classes
                 childState.Numbers = listLeft;
 
                 // count the gaps
-                childState.h = childState.CountGaps();
+                //childState.h = childState.CountGaps();
             }
             catch (Exception ex)
             {
@@ -173,7 +176,7 @@ namespace SearchAndSort.Classes
         }
 
         /// <summary>
-        /// Check if a state has not an equal anchestor and is unique
+        /// Check if a state has not appears before in its path
         /// </summary>
         /// <returns></returns>
         public bool IsUniqueDescendant()
@@ -225,6 +228,29 @@ namespace SearchAndSort.Classes
             }
 
             return gaps;
+        }
+
+        /// <summary>
+        /// Get a list with all states in the path from the root to the current state
+        /// </summary>
+        /// <returns></returns>
+        public List<State> GetPath()
+        {
+            List<State> states = new List<State>
+                        {
+                            this
+                        };
+
+            State? parent = this.Parent;
+            while (parent != null)
+            {
+                states.Add(parent);
+                parent = parent.Parent;
+            }
+
+            states.Reverse();
+
+            return states;
         }
 
         /// <summary>
@@ -303,8 +329,9 @@ namespace SearchAndSort.Classes
         /// <summary>
         /// Analyze a state using the UCS algorithm
         /// </summary>
-        public static void UCSAnalysis(State initialState, CancellationToken cancellationToken, MainWindow window)
+        public static ObservableCollection<string> UCSAnalysis(State initialState, CancellationToken cancellationToken)
         {
+            ObservableCollection<string> results = new ObservableCollection<string>();
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
             try
@@ -313,15 +340,19 @@ namespace SearchAndSort.Classes
                 State? finalState = null;
                 ulong statesOpened = 1;
 
+                // open the initial state
                 openStates.Add(initialState);
                 State selectedState = initialState;
-
                 Logs.Write($"**** Analyzing initial state {initialState.DisplayValue} with UCS algorithm ****");
                 Logs.Write($"Initial state: {initialState.DisplayValue} with g={initialState.g}, f={initialState.f}");
                 
                 // if the initial state is sorted then is the state we search
                 if (initialState.IsSorted())
                     finalState = initialState;
+
+                // evaluate the initial state
+                initialState.g = initialState.Weight;
+                initialState.f = initialState.g;
 
                 while (finalState == null && openStates.Count != 0)
                 {
@@ -331,30 +362,34 @@ namespace SearchAndSort.Classes
                     // open the childs of the selected state
                     for (int i = 1; i < selectedState.N; i++)
                     {
+                        // create the child splitted at position i 
                         State childState = selectedState.GetChild(i);
 
+                        // if the child hasnt appears before in its anchestors then use it
                         if (childState.IsUniqueDescendant())
                         {
-                            // evaluate state
+                            // evaluate child
+                            childState.g = childState.Parent.g + childState.Weight;
                             childState.f = childState.g;
 
+                            // add it to list with the opened states
                             openStates.Add(childState);
                             statesOpened++;
                             Logs.Write($"opening child {childState.DisplayValue} with g={childState.g}, f={childState.f}");
                         }
                     }
 
-                    // remove the selected state from the open states
+                    // remove the current state from the opened states
                     openStates.Remove(selectedState);
                     Logs.Write($"closing state {selectedState?.DisplayValue}");
 
-                    // keep the unique open states with the best f
+                    // keep the unique opened states with the best f
                     openStates = openStates.GroupBy(state => state.DisplayValue)
                         .Select(state => state.OrderBy(state => state.f)
                         .First())
                         .ToList();
 
-                    // find the open state with the best f
+                    // select the opened state with the best f
                     selectedState = GetBestState(openStates);
                     Logs.Write($"new selected state {selectedState?.DisplayValue} with g={selectedState?.g}, f={selectedState?.f}");
 
@@ -368,46 +403,31 @@ namespace SearchAndSort.Classes
 
                 Logs.Write($"Analyzing initial state {initialState.DisplayValue} with UCS algorithm ended");
 
+                // if a solution is found
                 if (finalState != null)
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    results.Add($"Final state found: {finalState.DisplayValue} with g={selectedState?.g}, f={selectedState?.f}");
+                    results.Add($"Final cost = {selectedState?.g}");
+                    results.Add($"States opened: {statesOpened}");
+                    results.Add($"Total time: {watch.ElapsedMilliseconds} ms");
+
+                    List<State> statesInPath = finalState.GetPath();
+
+                    results.Add($"Path until final state found: ");
+                    foreach (var state in statesInPath)
                     {
-                        window.Results.Add($"Final state found: {finalState.DisplayValue} with g={selectedState?.g}, f={selectedState?.f}");
-                        window.Results.Add($"Final cost = {selectedState?.g}");
-                        window.Results.Add($"States opened: {statesOpened}");
-                        window.Results.Add($"Total time: {watch.ElapsedMilliseconds} ms");
-
-                        List<State> states = new List<State>
-                        {
-                            finalState
-                        };
-
-                        State? parent = finalState.Parent;
-                        while (parent != null)
-                        {
-                            states.Add(parent);
-                            parent = parent.Parent;
-                        }
-
-                        states.Reverse();
-
-                        window.Results.Add($"Path until final state found: ");
-                        foreach (var state in states)
-                        {
-                            if (state.Parent == null)
-                                window.Results.Add($"initial state {state?.DisplayValue} with g={state?.g}, f={state?.f}");
-                            else
-                                window.Results.Add($"split at position {state?.SplitIndex+1} => state {state?.DisplayValue} with g={state?.g}, f={state?.f}");
-                        }
-                    });
+                        if (state.Parent == null)
+                            results.Add($"initial state {state?.DisplayValue} with g={state?.g}, f={state?.f}");
+                        else
+                            results.Add($"split at position {state?.SplitIndex + 1} => state {state?.DisplayValue} with g={state?.g}, f={state?.f}");
+                    }
                 }
                 else
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        window.Results.Add($"No final state found");
-                    });
+                    results.Add($"No final state found");
                 }
+
+                return results;
             }
             catch (Exception ex)
             {
@@ -422,8 +442,9 @@ namespace SearchAndSort.Classes
         /// <summary>
         /// Analyze a state using the A* algorithm
         /// </summary>
-        public static void ASTARAnalysis(State initialState, CancellationToken cancellationToken, MainWindow window)
+        public static ObservableCollection<string> ASTARAnalysis(State initialState, CancellationToken cancellationToken)
         {
+            ObservableCollection<string> results = new ObservableCollection<string>();
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
             try
@@ -432,15 +453,20 @@ namespace SearchAndSort.Classes
                 State? finalState = null;
                 ulong statesOpened = 1;
 
+                // open the initial state
                 openStates.Add(initialState);
                 State selectedState = initialState;
-
                 Logs.Write($"**** Analyzing initial state {initialState.DisplayValue} with A* algorithm ****");
                 Logs.Write($"Initial state: {initialState.DisplayValue} with g={initialState.g}, h={initialState.h}, f={initialState.f}");
                 
                 // if the initial state is sorted then is the state we search
                 if (initialState.IsSorted())
                     finalState = initialState;
+
+                // evaluate the initial state
+                initialState.g = initialState.Weight;
+                initialState.h = initialState.CountGaps();
+                initialState.f = initialState.g;
 
                 while (finalState == null && openStates.Count != 0)
                 {
@@ -450,31 +476,35 @@ namespace SearchAndSort.Classes
                     // open the childs of the selected state
                     for (int i = 1; i < selectedState.N; i++)
                     {
+                        // create the child splitted at position i 
                         State childState = selectedState.GetChild(i);
 
+                        // if the child hasnt appears before in its anchestors then use it
                         if (childState.IsUniqueDescendant())
                         {
                             // evaluate child
+                            childState.g = childState.Parent.g + childState.Weight;
+                            childState.h = childState.CountGaps();
                             childState.f = childState.g + childState.h;
 
-                            // open child
+                            // add it to list with the opened states
                             openStates.Add(childState);
                             statesOpened++;
                             Logs.Write($"opening child {childState.DisplayValue} with g={childState.g}, h={childState.h}, f={childState.f}");
                         }
                     }
 
-                    // remove the selected state from the open states
+                    // remove the current state from the opened states
                     openStates.Remove(selectedState);
                     Logs.Write($"closing state {selectedState?.DisplayValue}");
 
-                    // keep the unique open states with the best f
+                    // keep the unique opened states with the best f
                     openStates = openStates.GroupBy(state => state.DisplayValue)
                         .Select(state => state.OrderBy(state => state.f)
                         .First())
                         .ToList();
 
-                    // find the open state with the best f
+                    // select the opened state with the best f
                     selectedState = GetBestState(openStates);
                     Logs.Write($"new selected state {selectedState?.DisplayValue} with g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
 
@@ -486,48 +516,34 @@ namespace SearchAndSort.Classes
                     }
                 }
 
-                Logs.Write($"Analyzing initial state {initialState.DisplayValue} with UCS algorithm ended");
+                Logs.Write($"Analyzing initial state {initialState.DisplayValue} with A* algorithm ended");
 
+                // if a solution is found
                 if (finalState != null)
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    results.Add($"Final state found: {finalState.DisplayValue} with g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
+                    results.Add($"Final cost = {selectedState?.g}");
+                    results.Add($"States opened: {statesOpened}");
+                    results.Add($"Total time: {watch.ElapsedMilliseconds} ms");
+
+                    List<State> statesInPath = finalState.GetPath();
+
+                    results.Add($"Path until final state found: ");
+                    foreach (var state in statesInPath)
                     {
-                        window.Results.Add($"Final state found: {finalState.DisplayValue} with g={selectedState?.g}, h={selectedState?.h}, f={selectedState?.f}");
-                        window.Results.Add($"Final cost = {selectedState?.g}");
-                        window.Results.Add($"States opened: {statesOpened}");
-                        window.Results.Add($"Total time: {watch.ElapsedMilliseconds } ms");
-
-                        List<State> states = new List<State>
-                        {
-                            finalState
-                        };
-
-                        State? parent = finalState.Parent;
-                        while (parent != null)
-                        {
-                            states.Add(parent);
-                            parent = parent.Parent;
-                        }
-
-                        states.Reverse();
-
-                        window.Results.Add($"Path until final state found: ");
-                        foreach (var state in states)
-                        {
-                            if (state.Parent == null)
-                                window.Results.Add($"initial state {state?.DisplayValue} with g={state?.g}, h={state?.CountGaps()}, f={state?.f}");
-                            else
-                                window.Results.Add($"split at position {state?.SplitIndex+1} => state {state?.DisplayValue} with g={state?.g}, h={state?.h}, f={state?.f}");
-                        }
-                    });
+                        if (state.Parent == null)
+                            results.Add($"initial state {state?.DisplayValue} with g={state?.g}, h={state?.CountGaps()}, f={state?.f}");
+                        else
+                            results.Add($"split at position {state?.SplitIndex + 1} => state {state?.DisplayValue} with g={state?.g}, h={state?.h}, f={state?.f}");
+                    }
                 }
                 else
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        window.Results.Add($"No final state found");
-                    });
+                    results.Add($"No final state found");
+
                 }
+
+                return results;
             }
             catch (Exception ex)
             {

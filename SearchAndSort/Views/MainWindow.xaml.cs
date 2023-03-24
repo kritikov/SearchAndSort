@@ -49,7 +49,30 @@ namespace SearchAndSort.Views
             }
         }
 
-        public bool SearchingValuationsRunning = false;
+        private bool searchingValuationsRunning = false;
+        public bool SearchingValuationsRunning
+        {
+            get
+            {
+                return searchingValuationsRunning;
+            }
+            set
+            {
+                searchingValuationsRunning = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SearchingValuationsRunning"));
+            }
+        }
+
+        private int selectedTab = 0;
+        public int SelectedTab
+        {
+            get { return selectedTab; }
+            set
+            {
+                selectedTab = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SelectedTab"));
+            }
+        }
 
         private CancellationTokenSource cancellationToken = new CancellationTokenSource();
 
@@ -91,7 +114,7 @@ namespace SearchAndSort.Views
 
             logsSource.Source = Logs.List;
 
-            InitialState = new State("3, 5, 4, 1, 2");
+            InitialState = new State("3, 5, 4, 6, 1, 2");
 
             Logs.Write("Application started");
         }
@@ -106,6 +129,19 @@ namespace SearchAndSort.Views
         private void ExitProgram(object sender, RoutedEventArgs e)
         {
             System.Windows.Application.Current.Shutdown();
+        }
+
+        private void ClearLogs(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ClearLogs();
+            }
+            catch (Exception ex)
+            {
+                Logs.Write(ex.Message);
+                Message = ex.Message;
+            }
         }
 
         #endregion
@@ -163,6 +199,8 @@ namespace SearchAndSort.Views
             try
             {
                 SearchingValuationsRunning = true;
+                CommandManager.InvalidateRequerySuggested();
+
                 UCSAnalysis();
             }
             catch (Exception ex)
@@ -204,6 +242,26 @@ namespace SearchAndSort.Views
             try
             {
                 cancellationToken.Cancel();
+            }
+            catch (Exception ex)
+            {
+                Logs.Write(ex.Message);
+                Message = ex.Message;
+            }
+        }
+
+        private void ClearLogs_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = (SearchingValuationsRunning == false) ? true : false;
+
+        }
+        private void ClearLogs_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Message = "";
+
+            try
+            {
+                ClearLogs();
             }
             catch (Exception ex)
             {
@@ -267,21 +325,25 @@ namespace SearchAndSort.Views
             }
         }
 
+        /// <summary>
+        /// Solve the initial state using the UCS algorithm
+        /// </summary>
+        /// <returns></returns>
         private async Task UCSAnalysis()
         {
             try
             {
-                Results.Clear();
-                RefreshViews();
-
                 cancellationToken = new CancellationTokenSource();
-                SearchingValuationsRunning = true;
-
-                //await Task.Delay(1000);
 
                 await Task.Run(() =>
                 {
-                    State.UCSAnalysis(InitialState, cancellationToken.Token, this);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        Results.Clear();
+                        RefreshViews();
+                    });
+
+                    Results = State.UCSAnalysis(InitialState, cancellationToken.Token);
                 });
             }
             catch (Exception ex)
@@ -291,24 +353,34 @@ namespace SearchAndSort.Views
             }
             finally
             {
-                SearchingValuationsRunning = false;
-                RefreshViews();
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    SearchingValuationsRunning = false;
+                    RefreshViews();
+                    CommandManager.InvalidateRequerySuggested();
+                });
             }
         }
 
+        /// <summary>
+        /// Solve the initial state using the A* algorithm
+        /// </summary>
+        /// <returns></returns>
         private async Task ASTARAnalysis()
         {
             try
             {
-                Results.Clear();
-                RefreshViews();
-
                 cancellationToken = new CancellationTokenSource();
-                SearchingValuationsRunning = true;
 
                 await Task.Run(() =>
                 {
-                    State.ASTARAnalysis(InitialState, cancellationToken.Token, this);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        Results.Clear();
+                        RefreshViews();
+                    });
+
+                    Results = State.ASTARAnalysis(InitialState, cancellationToken.Token);
                 });
             }
             catch (Exception ex)
@@ -318,12 +390,26 @@ namespace SearchAndSort.Views
             }
             finally
             {
-                SearchingValuationsRunning = false;
-                RefreshViews();
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    SearchingValuationsRunning = false;
+                    RefreshViews();
+                    CommandManager.InvalidateRequerySuggested();
+                });
             }
         }
 
+        /// <summary>
+        /// Clear the messages from the logs
+        /// </summary>
+        private void ClearLogs()
+        {
+            Logs.Clear();
+        }
+
         #endregion
+
+        
     }
 }
 

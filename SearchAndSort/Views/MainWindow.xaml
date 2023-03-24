@@ -29,6 +29,10 @@
             Command="Commands:Commands.StopAnalysis"
             CanExecute="StopAnalysis_CanExecute"
             Executed="StopAnalysis_Executed"/>
+        <CommandBinding
+            Command="Commands:Commands.ClearLogs"
+            CanExecute="ClearLogs_CanExecute"
+            Executed="ClearLogs_Executed"/>
     </Window.CommandBindings>
     
     <DockPanel>
@@ -42,6 +46,7 @@
             <Button Content="UCS" Command="Commands:Commands.UCSAnalysis"/>
             <Button Content="A*" Command="Commands:Commands.ASTARAnalysis"/>
             <Button Content="stop" Command="Commands:Commands.StopAnalysis"/>
+            <Button Content="clear logs" Command="Commands:Commands.ClearLogs"/>
             <Button Content="exit" Click="ExitProgram"/>
         </WrapPanel>
 
@@ -67,7 +72,7 @@
 
             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
 
-            <TabControl Grid.Column="2">
+            <TabControl Grid.Column="2" SelectedIndex="{Binding SelectedTab}">
                 <TabItem Header="Results">
                     <ListBox ItemsSource="{Binding ResultsView}"/>
                 </TabItem>

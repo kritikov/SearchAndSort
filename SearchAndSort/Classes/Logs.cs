@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace SearchAndSort.Classes
 {
@@ -35,6 +36,13 @@ namespace SearchAndSort.Classes
             }
 
             list.Add($@"{DateTime.Now:hh:mm:ss}:: {message}");
+        }
+
+        public static void Clear()
+        {
+            Application.Current.Dispatcher.Invoke(() => {
+                List.Clear();
+            });
         }
     }
 }

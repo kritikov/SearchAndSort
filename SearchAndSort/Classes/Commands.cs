@@ -33,5 +33,11 @@ namespace SearchAndSort.Classes
             "stop",
             typeof(Commands)
         );
+
+        public static readonly RoutedUICommand ClearLogs = new RoutedUICommand(
+            "clear logs",
+            "clear logs",
+            typeof(Commands)
+        );
     }
 }
