@@ -258,22 +258,35 @@ namespace SearchAndSort.Classes
         /// </summary>
         /// <param name="stateString"></param>
         /// <returns></returns>
-        public static bool ValidateStateString(string stateString)
+        public static void ValidateStateString(string stateString)
         {
-
-            // check for unique numbers
-            var numbers = new List<int>();
-            var numbersArray = stateString.Split(new string[] { "," }, StringSplitOptions.None);
-            foreach (var number in numbersArray)
+            try
             {
-                var num = Convert.ToInt32(number.Trim());
-                if (numbers.Contains(num))
-                    return false;
-                else
-                    numbers.Add(num);
-            }
+                // check for unique numbers
+                var numbers = new List<int>();
+                var numbersArray = stateString.Split(new string[] { "," }, StringSplitOptions.None);
+                foreach (var number in numbersArray)
+                {
+                    var num = Convert.ToInt32(number.Trim());
+                    if (numbers.Contains(num))
+                        throw new Exception("the text contains duplicate values");
+                    else
+                        numbers.Add(num);
+                }
 
-            return true;
+                // check if no number is missing from the sequence
+                int min = numbers.Min();
+                int max = numbers.Max();
+                int diff = max - min;
+                if (diff + 1 != numbers.Count)
+                    throw new Exception($"Some numbers are missing from {min} to {max}");
+
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            
         }
 
         /// <summary>

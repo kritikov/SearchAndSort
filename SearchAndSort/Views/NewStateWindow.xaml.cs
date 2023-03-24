@@ -81,13 +81,9 @@ namespace SearchAndSort.Views
             Message = "";
             try
             {
-                if (!State.ValidateStateString(StateString))
-                    throw new Exception("the text contains duplicate values");
-                else
-                {
-                    StateCreated = new State(StateString);
-                    Close();
-                }
+                State.ValidateStateString(StateString);
+                StateCreated = new State(StateString);
+                Close();
             }
             catch (Exception ex)
             {

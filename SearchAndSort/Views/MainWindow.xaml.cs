@@ -221,6 +221,9 @@ namespace SearchAndSort.Views
 
             try
             {
+                SearchingValuationsRunning = true;
+                CommandManager.InvalidateRequerySuggested();
+
                 ASTARAnalysis();
             }
             catch (Exception ex)

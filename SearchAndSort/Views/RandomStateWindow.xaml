@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SearchAndSort.Views"
         mc:Ignorable="d"
-        Title="Create a random initial state" Height="151" Width="501" WindowStartupLocation="CenterScreen">
+        Title="Create a random initial state" Height="203" Width="508" WindowStartupLocation="CenterScreen">
 
     <DockPanel>
         <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
@@ -19,8 +19,8 @@
 
         <Grid Margin="5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
 
             <Grid.RowDefinitions>
@@ -29,8 +29,9 @@
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
-            <Label Grid.Row="0" Grid.Column="0" Content="Ν" HorizontalAlignment="Right"/>
-            <TextBox Grid.Row="0" Grid.Column="1" Width="50" Text="{Binding Ν}"/>
+            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Give the length of the initial state to create one in random order:"/>
+            <Label Grid.Row="1" Grid.Column="0" Content="Ν" HorizontalAlignment="Right"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Width="50" Text="{Binding Ν}"/>
 
         </Grid>
     </DockPanel>

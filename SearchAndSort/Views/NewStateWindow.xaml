@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SearchAndSort.Views"
         mc:Ignorable="d"
-        Title="Create a new initial state" Height="168" Width="804" WindowStartupLocation="CenterScreen">
+        Title="Create a custom initial state" Height="212" Width="676" WindowStartupLocation="CenterScreen">
 
     <DockPanel>
         <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
@@ -23,7 +23,7 @@
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" TextWrapping="Wrap" Text="Give the numbers of the new state separated with commas:"/>
+            <TextBlock Grid.Row="0" TextWrapping="Wrap" Text="Give the numbers of the initial state separated with commas in the order you want. The numbers must be unique and there cannot be one missing between the minimum and maximum of them."/>
             <TextBox Grid.Row="1" Text="{Binding StateString, Mode=TwoWay}" ScrollViewer.HorizontalScrollBarVisibility="Auto" HorizontalAlignment="Stretch"/>
 
         </Grid>

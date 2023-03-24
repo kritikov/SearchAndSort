@@ -41,13 +41,13 @@
         </StatusBar>
 
         <WrapPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Content="new state" Command="Commands:Commands.NewState"/>
-            <Button Content="random state" Command="Commands:Commands.RandomState"/>
-            <Button Content="UCS" Command="Commands:Commands.UCSAnalysis"/>
-            <Button Content="A*" Command="Commands:Commands.ASTARAnalysis"/>
-            <Button Content="stop" Command="Commands:Commands.StopAnalysis"/>
-            <Button Content="clear logs" Command="Commands:Commands.ClearLogs"/>
-            <Button Content="exit" Click="ExitProgram"/>
+            <Button Content="custom state" Command="Commands:Commands.NewState" ToolTip="Create manually the initial state"/>
+            <Button Content="random state" Command="Commands:Commands.RandomState" ToolTip="Create a random initial state by giving its length"/>
+            <Button Content="UCS" Command="Commands:Commands.UCSAnalysis" ToolTip="Solve the initial state using the UCS algorithm"/>
+            <Button Content="A*" Command="Commands:Commands.ASTARAnalysis" ToolTip="Solve the initial state using the A* algorithm"/>
+            <Button Content="stop" Command="Commands:Commands.StopAnalysis" ToolTip="Stop the analysis while the UCS or A* is running"/>
+            <Button Content="clear logs" Command="Commands:Commands.ClearLogs" ToolTip="Clear the messages from the logs"/>
+            <Button Content="exit" Click="ExitProgram" ToolTip="Close the application"/>
         </WrapPanel>
 
         <Grid>
@@ -59,10 +59,11 @@
 
             <GroupBox Grid.Column="0" Header="Parameters" Margin="0">
                 <StackPanel Orientation="Vertical">
-                    <TextBlock Text="Initial state"/>
+                    <TextBlock Text="Initial state" Margin="5, 5, 0, 0"/>
                     <TextBlock Text="{Binding InitialState.DisplayValue, Mode=OneWay}" HorizontalAlignment="Stretch" 
+                               Margin="5, 5, 0, 0"
                                TextWrapping="Wrap" MaxHeight="300" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                    <TextBlock>
+                    <TextBlock Margin="5, 10, 0, 0">
                         <Run Text="N = "/>
                         <Run Text="{Binding InitialState.N, Mode=OneWay}"/>
                     </TextBlock>
