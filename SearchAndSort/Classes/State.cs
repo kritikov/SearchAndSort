@@ -238,10 +238,10 @@ namespace SearchAndSort.Classes
         /// <returns></returns>
         public List<State> GetPath()
         {
-            List<State> states = new List<State>
-                        {
-                            this
-                        };
+            List<State> states = new List<State>()
+            {
+                this
+            };
 
             State? parent = this.Parent;
             while (parent != null)
