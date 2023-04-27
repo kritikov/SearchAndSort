@@ -40,16 +40,6 @@
             <TextBlock Text="{Binding Message}"/>
         </StatusBar>
 
-        <WrapPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Content="custom state" Command="Commands:Commands.NewState" ToolTip="Create manually the initial state"/>
-            <Button Content="random state" Command="Commands:Commands.RandomState" ToolTip="Create a random initial state by giving its length"/>
-            <Button Content="UCS" Command="Commands:Commands.UCSAnalysis" ToolTip="Solve the initial state using the UCS algorithm"/>
-            <Button Content="A*" Command="Commands:Commands.ASTARAnalysis" ToolTip="Solve the initial state using the A* algorithm"/>
-            <Button Content="stop" Command="Commands:Commands.StopAnalysis" ToolTip="Stop the analysis while the UCS or A* is running"/>
-            <Button Content="clear logs" Command="Commands:Commands.ClearLogs" ToolTip="Clear the messages from the logs"/>
-            <Button Content="exit" Click="ExitProgram" ToolTip="Close the application"/>
-        </WrapPanel>
-
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>
@@ -57,18 +47,30 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <GroupBox Grid.Column="0" Header="Parameters" Margin="0">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock Text="Initial state" Margin="5, 5, 0, 0"/>
-                    <TextBlock Text="{Binding InitialState.DisplayValue, Mode=OneWay}" HorizontalAlignment="Stretch" 
+            <StackPanel Grid.Column="0">
+                <GroupBox Header="Informations" Margin="0, 0, 0, 10">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="Initial state" Margin="5, 5, 0, 0"/>
+                        <TextBlock Text="{Binding InitialState.DisplayValue, Mode=OneWay}" HorizontalAlignment="Stretch" 
                                Margin="5, 5, 0, 0"
                                TextWrapping="Wrap" MaxHeight="300" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                    <TextBlock Margin="5, 10, 0, 0">
-                        <Run Text="N = "/>
-                        <Run Text="{Binding InitialState.N, Mode=OneWay}"/>
-                    </TextBlock>
+                        <TextBlock Margin="5, 10, 0, 0">
+                            <Run Text="N = "/>
+                            <Run Text="{Binding InitialState.N, Mode=OneWay}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </GroupBox>
+
+                <StackPanel>
+                    <Button Content="custom state" Width="100" Command="Commands:Commands.NewState" ToolTip="Create manually the initial state"/>
+                    <Button Content="random state" Width="100" Command="Commands:Commands.RandomState" ToolTip="Create a random initial state by giving its length"/>
+                    <Button Content="UCS" Width="100" Command="Commands:Commands.UCSAnalysis" ToolTip="Solve the initial state using the UCS algorithm"/>
+                    <Button Content="A*" Width="100" Command="Commands:Commands.ASTARAnalysis" ToolTip="Solve the initial state using the A* algorithm"/>
+                    <Button Content="stop" Width="100" Command="Commands:Commands.StopAnalysis" ToolTip="Stop the analysis while the UCS or A* is running"/>
+                    <Button Content="clear logs" Width="100" Command="Commands:Commands.ClearLogs" ToolTip="Clear the messages from the logs"/>
+                    <Button Content="exit" Width="100" Click="ExitProgram" ToolTip="Close the application"/>
                 </StackPanel>
-            </GroupBox>
+            </StackPanel>
 
             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
 

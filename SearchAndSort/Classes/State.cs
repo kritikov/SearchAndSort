@@ -50,7 +50,7 @@ namespace SearchAndSort.Classes
             {
                 Numbers.Add(Convert.ToInt32(number.Trim()));
             }
-        }
+		}
 
         #endregion
 
@@ -171,7 +171,7 @@ namespace SearchAndSort.Classes
             }
             catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
 
@@ -255,12 +255,12 @@ namespace SearchAndSort.Classes
             return states;
         }
 
-        /// <summary>
-        /// Check if a string if is valid to create a state
-        /// </summary>
-        /// <param name="stateString"></param>
-        /// <returns></returns>
-        public static void ValidateStateString(string stateString)
+		/// <summary>
+		/// Check if a string if is valid to create a state
+		/// </summary>
+		/// <param name="stateString"></param>
+		/// <returns></returns>
+		public static void ValidateStateString(string stateString)
         {
             try
             {
@@ -346,8 +346,9 @@ namespace SearchAndSort.Classes
         /// </summary>
         public static ObservableCollection<string> UCSAnalysis(State initialState, CancellationToken cancellationToken)
         {
+			var watch = System.Diagnostics.Stopwatch.StartNew();
+			
             ObservableCollection<string> results = new ObservableCollection<string>();
-            var watch = System.Diagnostics.Stopwatch.StartNew();
 
             try
             {
@@ -365,10 +366,6 @@ namespace SearchAndSort.Classes
                 if (initialState.IsSorted())
                     finalState = initialState;
 
-                // evaluate the initial state
-                initialState.g = initialState.Weight;
-                initialState.f = initialState.g;
-
                 while (finalState == null && openStates.Count != 0)
                 {
                     // stop the process if the user has cancel it
@@ -380,8 +377,8 @@ namespace SearchAndSort.Classes
                         // create the child splitted at position i 
                         State childState = selectedState.GetChild(i);
 
-                        // if the child hasnt appears before in its anchestors then use it
-                        if (childState.IsUniqueDescendant())
+						// if the child has not appeared before in its anchestors then use it
+						if (childState.IsUniqueDescendant())
                         {
                             // evaluate child
                             childState.g = childState.Parent.g + childState.Weight;
@@ -459,8 +456,9 @@ namespace SearchAndSort.Classes
         /// </summary>
         public static ObservableCollection<string> ASTARAnalysis(State initialState, CancellationToken cancellationToken)
         {
+			var watch = System.Diagnostics.Stopwatch.StartNew();
+			
             ObservableCollection<string> results = new ObservableCollection<string>();
-            var watch = System.Diagnostics.Stopwatch.StartNew();
 
             try
             {
@@ -478,11 +476,6 @@ namespace SearchAndSort.Classes
                 if (initialState.IsSorted())
                     finalState = initialState;
 
-                // evaluate the initial state
-                initialState.g = initialState.Weight;
-                initialState.h = initialState.CountGaps();
-                initialState.f = initialState.g;
-
                 while (finalState == null && openStates.Count != 0)
                 {
                     // stop the process if the user has cancel it
@@ -497,10 +490,10 @@ namespace SearchAndSort.Classes
                         // if the child hasnt appears before in its anchestors then use it
                         if (childState.IsUniqueDescendant())
                         {
-                            // evaluate child
-                            childState.g = childState.Parent.g + childState.Weight;
+							// evaluate child
+							childState.g = childState.Parent.g + childState.Weight;
                             childState.h = childState.CountGaps();
-                            childState.f = childState.g + childState.h;
+							childState.f = childState.g + childState.h;
 
                             // add it to list with the opened states
                             openStates.Add(childState);
@@ -555,7 +548,6 @@ namespace SearchAndSort.Classes
                 else
                 {
                     results.Add($"No final state found");
-
                 }
 
                 return results;
