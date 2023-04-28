@@ -105,7 +105,7 @@ namespace SearchAndSort.Classes
             childState.Weight = 1;
 
             // calculate costs
-            childState.g = childState.Parent.g + childState.Weight;
+            //childState.g = childState.Parent.g + childState.Weight;
 
             try
             {
@@ -128,9 +128,6 @@ namespace SearchAndSort.Classes
 
                 // set the numbers of the child as the result
                 childState.Numbers = listLeft;
-
-                // count the gaps
-                //childState.h = childState.CountGaps();
             }
             catch (Exception ex)
             {
