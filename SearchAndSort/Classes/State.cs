@@ -104,9 +104,6 @@ namespace SearchAndSort.Classes
             childState.SplitIndex = splitIndex;
             childState.Weight = 1;
 
-            // calculate costs
-            //childState.g = childState.Parent.g + childState.Weight;
-
             try
             {
                 // split the list of numbers in two parts
